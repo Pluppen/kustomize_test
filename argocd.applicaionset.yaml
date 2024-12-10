@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: applications
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - matrix:
+        generators:
+          - git:
+              repoURL: https://github.com/pluppen/kustomize_test.git
+              revision: HEAD
+              files:
+              - path: apps/**/config.json
+              pathParamPrefix: 'app'
+          - git:
+              repoURL: https://github.com/pluppen/kustomize_test.git
+              revision: HEAD
+              directories:
+              - path: 'apps/{{.appName}}/overlays/*'
+              pathParamPrefix: 'env'
+  template:
+    metadata:
+      name: '{{.appName}}-{{.env.path.basename}}'
+    spec:
+      project: "default"
+      source:
+        repoURL: https://github.com/argoproj/argo-cd.git
+        targetRevision: HEAD
+        path: '{{.app.path.path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{.app.path.basename}}'
+      syncPolicy:
+        syncOptions:
+        - CreateNamespace=true
