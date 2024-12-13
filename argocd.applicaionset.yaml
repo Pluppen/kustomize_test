@@ -7,32 +7,32 @@ spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
   generators:
-    - matrix:
-        generators:
-          - git:
-              repoURL: https://github.com/pluppen/kustomize_test.git
-              revision: HEAD
-              files:
-              - path: apps/**/config.json
-              pathParamPrefix: 'app'
-          - git:
-              repoURL: https://github.com/pluppen/kustomize_test.git
-              revision: HEAD
-              directories:
-              - path: 'apps/{{.appName}}/overlays/*'
-              pathParamPrefix: 'env'
+    #- matrix:
+    #    generators:
+    #      - git:
+    #          repoURL: https://github.com/pluppen/kustomize_test.git
+    #          revision: HEAD
+    #          files:
+    #          - path: apps/**/config.json
+    #          pathParamPrefix: 'app'
+    - git:
+        repoURL: https://github.com/pluppen/kustomize_test.git
+        revision: HEAD
+        files:
+        - path: 'apps/app-1/overlays/**/config.json'
+        pathParamPrefix: 'overlay'
   template:
     metadata:
-      name: '{{.appName}}-{{.env.path.basename}}'
+      name: 'app-1-{{.overlay.path.basename}}'
     spec:
       project: "default"
       source:
         repoURL: https://github.com/argoproj/argo-cd.git
         targetRevision: HEAD
-        path: '{{.app.path.path}}'
+        path: ''#'{{.app.path.path}}'
       destination:
-        server: https://kubernetes.default.svc
-        namespace: '{{.app.path.basename}}'
+        server: '' #'{{ .clusterURL }}'
+        namespace: '{{ .appName }}'
       syncPolicy:
         syncOptions:
         - CreateNamespace=true
